@@ -1,0 +1,12 @@
+# Local build outputs
+dist/
+*.exe
+*.test
+
+# IDE files
+.vscode/
+
+# Local environment and credentials
+.env
+.aws/
+*.pem

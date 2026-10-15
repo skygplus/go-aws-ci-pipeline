@@ -1,0 +1,39 @@
+
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      golang: 1.24
+    commands:
+      - echo "Preparing Go build environment"
+      - go version
+
+  pre_build:
+    commands:
+      - echo "Running Go formatting checks"
+      - test -z "$(gofmt -l .)"
+      - echo "Checking Go module"
+      - go mod tidy
+      - go mod verify
+
+  build:
+    commands:
+      - echo "Running unit tests"
+      - go test -v ./...
+      - echo "Compiling Go application"
+      - mkdir -p dist
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/go-aws-ci-pipeline ./cmd/app
+
+  post_build:
+    commands:
+      - echo "Build and test stages completed"
+      - ls -lh dist/
+
+artifacts:
+  file:
+    - go-aws-ci-pipeline
+    - README.md
+  base-directory: dist
+  discard-paths: yes
+
