@@ -1,72 +1,67 @@
 # Go AWS DevOps CI/CD Pipeline
 
+![Language](https://img.shields.io/badge/Language-Go-00ADD8?logo=go&logoColor=white)
+![Platform](https://img.shields.io/badge/Platform-AWS-232F3E?logo=amazonaws&logoColor=white)
+![Workflow](https://img.shields.io/badge/Workflow-CI%2FCD-blue)
+
 ## 1. Project Overview
 
-This project demonstrates the implementation of an automated Continuous Integration and Continuous Delivery (CI/CD) pipeline for a Go application using AWS managed DevOps services.
+This project demonstrates a continuous integration (CI) workflow for a Go application using AWS managed DevOps services. It combines local development in Visual Studio Code, Git version control, AWS CodeCommit, AWS CodeBuild, AWS CodePipeline, AWS Identity and Access Management (IAM), Amazon S3, and Amazon CloudWatch Logs.
 
-The objective is to automate source code management, application testing, compilation, artifact generation and pipeline execution using AWS CodeCommit, AWS CodeBuild, AWS CodePipeline, AWS Identity and Access Management (IAM), and Amazon S3.
+The pipeline is designed to retrieve committed source code, validate and test the Go application, compile a Linux executable, and publish build output as a pipeline artifact. The intended workflow is:
 
-The project follows DevOps principles, including automation, version control, repeatable builds, least-privilege access and continuous validation of application changes.
+**Developer → VS Code/Bash → Git → CodeCommit → CodePipeline → CodeBuild → S3 artifact store**
 
-The application includes Go source code and automated unit tests. Whenever a developer pushes an approved change to the configured source branch, the pipeline can automatically retrieve the latest source code, execute the build specification, run tests and generate a deployable application artifact.
+This README documents the intended architecture and the evidence required to verify the actual AWS implementation. AWS resources, permissions, successful statuses, and screenshots must be confirmed in the account before being reported as completed.
 
 ## 2. Project Objectives
 
-The objectives of this project are to:
-
-- Develop a Go application with automated unit tests.
-- Manage source code using Git and AWS CodeCommit.
-- Configure AWS CodeBuild to validate, test and compile the application.
-- Use a `buildspec.yml` file to define repeatable build instructions.
-- Orchestrate the workflow using AWS CodePipeline.
-- Configure IAM service roles and permissions for secure communication between AWS services.
-- Store build artifacts using Amazon S3.
-- Demonstrate feature branch development and controlled code integration.
-- Capture evidence of successful local and AWS-based testing.
-- Document the configuration, security controls and implementation process.
+- Build and test a small Go application.
+- Track source changes with Git and host the remote repository in AWS CodeCommit.
+- Define repeatable build steps in `buildspec.yml`.
+- Use CodeBuild to run checks, unit tests, and compile the application.
+- Use CodePipeline to orchestrate source and build actions.
+- Store pipeline artifacts in Amazon S3.
+- Apply least-privilege IAM permissions and document service-role trust relationships.
+- Verify automatic pipeline execution after a commit is pushed to the configured branch.
+- Demonstrate a feature-branch and merge workflow.
+- Provide clear AWS Console screenshots as assessment evidence.
 
 ## 3. Technology Stack
 
 | Technology | Purpose |
 |---|---|
-| Go (Golang) | Application development |
-| Visual Studio Code | Code editing and project management |
-| Bash | Command-line operations and automation |
-| Git | Version control |
-| AWS CodeCommit | Source code repository |
-| AWS CodeBuild | Automated testing and compilation |
-| AWS CodePipeline | Pipeline orchestration |
+| Go (Golang) | Application and unit tests |
+| Visual Studio Code | Editing and project navigation |
+| Bash / Git Bash / WSL2 | Local terminal commands |
+| Git | Version control and branching |
+| AWS CodeCommit | Remote source repository |
+| AWS CodeBuild | Automated validation, testing, and compilation |
+| AWS CodePipeline | Source-to-build workflow orchestration |
 | Amazon S3 | Pipeline artifact storage |
-| AWS IAM | Identity and access management |
-| AWS CloudWatch Logs | Build log monitoring |
-| YAML | Build configuration |
+| AWS IAM | Identity, roles, policies, and service trust |
+| Amazon CloudWatch Logs | Build logs and troubleshooting |
+| YAML | Build specification configuration |
 
-## 4. Solution Architecture
+## 4. Architecture and Workflow
 
-The project uses AWS managed services to automate the movement of application code from source control through testing and artifact generation.
+1. The developer edits Go source code in VS Code.
+2. Git records changes in a commit.
+3. The commit is pushed to the configured CodeCommit branch.
+4. CodePipeline detects the source change when change detection is enabled and correctly configured.
+5. The Source action produces an input artifact for the next stage.
+6. CodeBuild reads `buildspec.yml`, runs the configured checks and unit tests, and compiles the application.
+7. CodeBuild publishes its configured output artifact.
+8. CodePipeline stores and passes artifacts through its S3 artifact store.
+9. The developer checks the execution result and logs in the AWS Console.
 
-### CI/CD workflow
+**Required baseline pipeline:** `Source → Build`
 
-1. A developer creates or modifies Go source code locally.
-2. Git records the changes in a commit.
-3. The developer pushes the changes to AWS CodeCommit.
-4. An AWS CodePipeline source action retrieves the latest committed code.
-5. AWS CodeBuild executes the commands defined in `buildspec.yml`.
-6. Go formatting and dependency checks are performed.
-7. Automated unit tests validate the application.
-8. The application is compiled into a Linux executable.
-9. The build output is published as a pipeline artifact in Amazon S3.
-10. Pipeline execution results and build logs are reviewed in the AWS Console.
-
-**Architecture flow:**
-
-`Developer → VS Code → Git → CodeCommit → CodePipeline → CodeBuild → Amazon S3`
-
-An additional deployment stage can be configured if the assessment requires a complete Source, Build and Deploy pipeline. The deployment target and deployment configuration must be implemented before claiming successful deployment.
+A Deploy stage is optional unless specifically required by the assignment. If a Deploy stage is added, configure a real deployment provider and target; do not add an empty stage or describe an artifact upload as deploying a running Go service.
 
 ## 5. Repository Structure
 
-The repository is organised to separate application code, tests, configuration and evidence.
+The following is the intended layout. Adjust it to match the files actually present in your repository.
 
 ```text
 go-aws-ci-pipeline/
@@ -79,369 +74,245 @@ go-aws-ci-pipeline/
 │       └── greeting_test.go
 ├── screenshots/
 │   ├── 01-local-environment.png
-│   ├── 02-go-tests.png
-│   ├── 03-git-initial-commit.png
+│   ├── 02-local-tests.png
+│   ├── 03-git-history.png
 │   ├── 04-codecommit-repository.png
-│   ├── 05-git-push.png
-│   ├── 06-codecommit-source-files.png
-│   ├── 07-iam-service-roles.png
-│   ├── 08-codebuild-project.png
-│   ├── 09-codebuild-success.png
-│   ├── 10-codepipeline-configuration.png
-│   ├── 11-codepipeline-succeeded.png
-│   ├── 12-s3-artifact.png
-│   └── 13-feature-branch-workflow.png
+│   ├── 05-codecommit-branches.png
+│   ├── 06-codebuild-project.png
+│   ├── 07-codebuild-succeeded.png
+│   ├── 08-codebuild-logs.png
+│   ├── 09-codepipeline-succeeded.png
+│   ├── 10-automatic-trigger.png
+│   ├── 11-s3-artifact.png
+│   ├── 12-iam-codebuild-role.png
+│   └── 13-iam-codepipeline-role.png
 ├── .gitignore
+├── AWS_ENVIRONMENT_SETUP.md
 ├── buildspec.yml
 ├── go.mod
 └── README.md
 ```
 
-The screenshots directory should contain genuine evidence captured from the local development environment and AWS Management Console. Filenames can be adjusted to match the actual screenshots submitted.
+Only include screenshot filenames once the corresponding screenshots have been captured and committed. Do not create empty or illustrative screenshots to represent AWS results.
 
-## 6. Application Description
-
-The Go application generates a greeting message and demonstrates the use of a separate internal package.
-
-The application entry point is located at:
-
-`cmd/app/main.go`
-
-The greeting function is implemented in:
-
-`internal/greeting/greeting.go`
-
-Automated tests are defined in:
-
-`internal/greeting/greeting_test.go`
-
-The tests validate the expected output for a supplied name and for an empty name.
-
-This structure demonstrates basic Go modularity, separation of responsibilities and automated unit testing.
-
-## 7. Local Development and Testing
+## 6. Local Setup and Validation
 
 ### Prerequisites
 
-The local environment requires:
-
-- Go installed and available on the system PATH.
-- Git installed and configured.
+- Go installed and available on `PATH`.
+- Git installed.
 - Visual Studio Code.
-- Bash terminal, Git Bash or WSL2.
-- An AWS account with the necessary service permissions.
-- AWS CLI v2 for AWS command-line operations, if required.
+- Bash, Git Bash, or WSL2.
+- An AWS account and authorised access to the required services.
+- AWS CLI v2 if using the command line to inspect AWS identity or resources.
 
-### Verify the environment
+Check the tools:
 
 ```bash
-git --version
 go version
+git --version
 aws --version
 ```
 
-### Run the unit tests
-
-From the project root:
+Run the tests from the repository root:
 
 ```bash
 go test ./...
 ```
 
-### Run the application
+Run the application:
 
 ```bash
 go run ./cmd/app
 ```
 
-### Compile the application
-
-```bash
-mkdir -p dist
-
-go build -o dist/go-aws-ci-pipeline ./cmd/app
-```
-
-### Validate formatting
+Format the Go files:
 
 ```bash
 gofmt -w cmd/app/main.go internal/greeting/*.go
 ```
 
-These commands provide a repeatable local process for validating the application before changes are pushed to CodeCommit.
-
-## 8. Git Version Control and CodeCommit
-
-Git is used to track application changes, maintain commit history and manage development branches.
-
-AWS CodeCommit hosts the remote repository and provides the source used by CodePipeline.
-
-### Repository configuration
-
-The repository name is:
-
-`go-aws-ci-pipeline`
-
-The primary branch is:
-
-`main`
-
-The remote repository URL should be obtained from the CodeCommit Console rather than copied from an unrelated example.
-
-### Initial Git configuration
+Compile locally, if the repository follows the structure above:
 
 ```bash
-git init
-git branch -M main
-
-git add .
-git commit -m "Initial Go application and CI configuration"
-
-git remote add origin YOUR_CODECOMMIT_HTTPS_URL
-git push -u origin main
+mkdir -p dist
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+  go build -o dist/go-aws-ci-pipeline ./cmd/app
 ```
 
-Replace the remote URL placeholder with the actual repository URL.
+If your project uses different file paths, update the commands to match the actual layout. Capture the successful local test output as evidence, but keep it separate from AWS CodeBuild evidence.
+
+## 7. CodeCommit Repository and Git Workflow
+
+The expected repository name is `go-aws-ci-pipeline`, and the expected primary branch is `main`. Verify both in the AWS Console and in the configured Git remote.
+
+Check the remote:
+
+```bash
+git remote -v
+git branch --show-current
+git log --oneline --decorate -5
+```
+
+If connecting an existing local repository to CodeCommit for the first time, use the HTTPS clone/push URL copied from the CodeCommit Console. Do not use a guessed URL or commit credentials to the repository.
 
 ### Feature branch workflow
-
-Feature branches allow developers to make changes independently before integrating them into the main branch.
 
 Create a feature branch:
 
 ```bash
 git checkout main
 git pull origin main
-
-git checkout -b feature/improve-greeting
+git checkout -b feature/ci-improvements
 ```
 
-Make the application changes, run the tests and commit the work:
+Make a small, relevant change, run tests, and commit it:
 
 ```bash
 go test ./...
-
-git add .
-git commit -m "Improve greeting application and tests"
-
-git push -u origin feature/improve-greeting
+git add README.md
+git commit -m "Document CI pipeline improvements"
+git push -u origin feature/ci-improvements
 ```
 
-Where the repository and available tooling support pull requests, open a pull request from `feature/improve-greeting` into `main`, review the changes and merge the branch after approval.
-
-If pull requests are not available in the configured CodeCommit environment, demonstrate the branch merge locally:
+If a pull-request workflow is available in the configured environment, open a pull request, review the change, and merge it into `main`. If not, demonstrate a local merge and push the updated branch:
 
 ```bash
 git checkout main
-git merge --no-ff feature/improve-greeting \
-  -m "Merge feature/improve-greeting"
-
+git pull origin main
+git merge --no-ff feature/ci-improvements \
+  -m "Merge feature/ci-improvements"
 git push origin main
 ```
 
-A merge into `main` can trigger the configured pipeline when source-change detection is enabled.
+Document which method was actually used. Do not claim that a pull request was created if the workflow used a local merge instead.
 
-**Evidence required:** Include a screenshot of the feature branch, commit history, pull request where available, or successful merge in the Git history. Do not claim that a pull request was completed unless one was actually created and reviewed.
+## 8. AWS CodeCommit Configuration
 
-## 9. AWS CodeCommit Configuration
+In the AWS Console, open CodeCommit and verify:
 
-AWS CodeCommit is the source control service used by the pipeline.
+- The repository exists and is in the expected AWS Region.
+- The repository contains the application files, `go.mod`, `buildspec.yml`, `.gitignore`, and README.
+- The `main` branch exists and contains the latest commit.
+- A feature branch and merge history are visible if you completed that workflow.
+- The CodePipeline Source action references the correct repository and branch.
 
-The repository contains:
+**Evidence to capture:** repository overview, branch list, and commit history. The local `git log` output alone does not prove that the remote repository is correctly configured.
 
-- Go application source files.
-- Automated unit tests.
-- `go.mod`.
-- `buildspec.yml`.
-- `.gitignore`.
-- `README.md`.
+## 9. AWS CodeBuild Configuration
 
-The configured pipeline source should point to the correct CodeCommit repository and branch.
+The expected CodeBuild project name is `go-aws-ci-build`. Verify the actual name in the Console.
 
-### Verification
+Check these settings:
 
-1. Open the AWS Management Console.
-2. Navigate to CodeCommit.
-3. Open the `go-aws-ci-pipeline` repository.
-4. Confirm that the source files are present.
-5. Confirm that the latest commit is visible.
-6. Verify that the pipeline is configured to use the intended branch.
+- Source is configured appropriately for a standalone CodeBuild test or for the CodePipeline-provided input artifact.
+- The build environment is a supported Linux image.
+- The Go runtime version is compatible with `go.mod` and the selected image.
+- The build specification points to `buildspec.yml` at the correct path.
+- The CodeBuild service role can write logs and access the configured source and artifacts.
+- CloudWatch Logs are enabled.
 
-**Evidence:** Add a screenshot showing the repository name, branch and committed files.
+The build specification should run the checks and tests, compile the Go application, and identify the intended output artifacts. The actual commands and artifact paths must agree with the repository layout.
 
-## 10. AWS CodeBuild Configuration
+### Verify a build
 
-AWS CodeBuild provides the managed build environment used to validate and compile the Go application.
+1. Open CodeBuild and select the project.
+2. Start a build if one is not already available.
+3. Open the latest build execution.
+4. Confirm the status is `SUCCEEDED`.
+5. Inspect the logs for passing tests, successful compilation, and artifact upload.
+6. Record the build ID and date for your assessment notes.
 
-### Build project
+**Evidence to capture:** project configuration, build history with a `SUCCEEDED` execution, and logs showing the test/build steps. A README statement alone is not evidence of a successful AWS build.
 
-The example project name is:
+## 10. AWS CodePipeline Configuration
 
-`go-aws-ci-build`
-
-The project should use:
-
-- AWS CodeCommit as the source provider for an independent build test.
-- A supported managed Linux build image.
-- A Go runtime compatible with `go.mod`.
-- `buildspec.yml` as the build specification.
-- A CodeBuild service role with the necessary permissions.
-- CloudWatch Logs for build output.
-
-The exact image version and available Go runtimes should be verified in the AWS Console.
-
-### Build phases
-
-The build specification defines the following phases:
-
-**Install:** Prepares the Go runtime.
-
-**Pre-build:** Checks Go formatting and validates module dependencies.
-
-**Build:** Runs unit tests and compiles the application for Linux AMD64.
-
-**Post-build:** Confirms the build output is available for packaging.
-
-**Artifacts:** Publishes the compiled executable and README file.
-
-### Verification
-
-After starting a build:
-
-1. Open the CodeBuild project.
-2. Navigate to the build history.
-3. Select the latest execution.
-4. Confirm that the build status is `SUCCEEDED`.
-5. Review the logs to verify that tests passed and compilation completed.
-6. Confirm that the expected output artifact was generated.
-
-**Evidence:** Include a screenshot of the CodeBuild build history showing a successful execution and a screenshot of the relevant build logs.
-
-## 11. AWS CodePipeline Configuration
-
-AWS CodePipeline orchestrates the source and build actions.
-
-The example pipeline name is:
-
-`go-aws-ci-pipeline`
+The expected pipeline name is `go-aws-ci-pipeline`. Verify the actual pipeline name and Region.
 
 ### Source stage
 
-The Source stage retrieves the committed code from AWS CodeCommit.
-
-Configuration:
-
-- Source provider: AWS CodeCommit.
+- Provider: AWS CodeCommit.
 - Repository: `go-aws-ci-pipeline`.
 - Branch: `main`.
-- Change detection: Enabled where supported and configured.
+- Source-change detection: enabled and correctly configured if automatic triggering is required.
 
 ### Build stage
 
-The Build stage invokes AWS CodeBuild using the project:
+- Provider: AWS CodeBuild.
+- Build project: `go-aws-ci-build`.
+- Input: the artifact produced by the Source stage.
+- Output: the configured build artifact, where required by the pipeline.
 
-`go-aws-ci-build`
+### Execution verification
 
-CodeBuild receives the source artifact, executes `buildspec.yml` and produces the build output.
+1. Open CodePipeline and select the pipeline.
+2. Run the pipeline or push a new commit to the configured branch.
+3. Open the execution details.
+4. Confirm Source and Build succeeded.
+5. Check that the execution corresponds to the expected commit.
+6. If automatic triggering is required, push a new commit and verify that a new execution starts without manually selecting **Release change** or **Start pipeline**.
 
-### Deploy stage
+**Evidence to capture:** the full pipeline view with Source and Build showing `Succeeded`, and a separate screenshot of the new execution caused by a source change.
 
-If the assessment requires Source, Build and Deploy stages, a valid deployment provider and deployment target must be configured.
+## 11. Amazon S3 Artifact Verification
 
-The deployment target depends on the chosen architecture. For example, an S3 deployment action can publish static application files, but it does not by itself execute a compiled Go server application.
+CodePipeline uses an S3 artifact store to pass artifacts between actions. The bucket and object names may be generated automatically.
 
-For a deployable Go service, select an appropriate deployment target and configure its permissions and deployment process before adding the stage.
+To verify the artifact:
 
-Do not add an empty or misleading deployment stage merely to make the pipeline appear complete.
+1. Open the pipeline details/settings and identify the artifact store bucket.
+2. Open S3 in the same AWS Region.
+3. Select the identified bucket.
+4. Locate the relevant pipeline execution artifacts.
+5. Confirm that the build action completed and produced an output artifact.
+6. If the build output is separately downloadable, inspect it to verify the expected files.
 
-### Verification
+The build output may contain a compiled Linux executable and README, depending on the actual `buildspec.yml`. Do not assume the S3 object will be named `go-aws-ci-pipeline.zip`.
 
-A successful pipeline execution should demonstrate:
+Keep the artifact bucket private. Do not enable public access to make evidence easier to view.
 
-- Source action completed successfully.
-- Build action completed successfully.
-- Deploy action completed successfully, if deployment has been configured.
-- The latest execution corresponds to the intended commit.
-- The resulting artifact is available at the configured destination.
+**Evidence to capture:** the bucket name and the relevant artifact object in the S3 Console.
 
-**Evidence:** Include a screenshot showing the complete pipeline execution and the status of every configured stage. If all three stages are required, capture the full Source, Build and Deploy pipeline with each stage showing `Succeeded`.
+## 12. IAM Permissions and Trust Relationships
 
-## 12. IAM Security and Permissions
-
-AWS IAM controls the permissions used by developers and AWS services.
-
-This project follows the principle of least privilege: each identity should receive only the permissions needed to perform its task.
+Use `AWS_ENVIRONMENT_SETUP.md` to record the **actual** role names, attached policies, relevant actions, resource scope, and trust relationships. The examples below are areas to inspect, not a claim that these permissions are already attached.
 
 ### Developer identity
 
-The developer identity needs permissions to create and manage the project resources and to access the CodeCommit repository.
-
-Depending on how the project is configured, required permissions can include:
-
-- `codecommit:CreateRepository`
-- `codecommit:GetRepository`
-- `codecommit:GitPull`
-- `codecommit:GitPush`
-- `codebuild:CreateProject`
-- `codebuild:StartBuild`
-- `codebuild:BatchGetBuilds`
-- `codepipeline:CreatePipeline`
-- `codepipeline:GetPipeline`
-- `codepipeline:GetPipelineState`
-- `codepipeline:StartPipelineExecution`
-- Relevant IAM role and policy management permissions.
-- Relevant S3 permissions for artifact inspection.
-
-These actions are examples of relevant permissions, not a claim that all are attached to the developer identity. Resource creation permissions should be restricted to the required resources where practical.
+Depending on the tasks performed, the developer identity may need permissions to access CodeCommit, inspect/start CodeBuild and CodePipeline executions, inspect S3 artifacts, and configure project resources. Resource creation and IAM administration permissions should be limited to what is necessary.
 
 ### CodeBuild service role
 
-The CodeBuild service role allows CodeBuild to execute builds.
+Inspect whether the role has the permissions needed for:
 
-Depending on the configured source and artifact handling, permissions can include:
+- CloudWatch Logs stream creation and log publishing.
+- Reading source or input artifacts.
+- Writing output artifacts to the configured S3 location.
+- Using the configured encryption key, if applicable.
 
-- CloudWatch Logs permissions to create log streams and publish build logs.
-- S3 permissions to read input artifacts and write output artifacts.
-- Any additional permissions required by the chosen source provider.
-
-For CodePipeline-integrated builds, ensure the CodeBuild role can access the configured artifact objects and encryption keys, if applicable.
+The CodeBuild service role normally trusts `codebuild.amazonaws.com`.
 
 ### CodePipeline service role
 
-The CodePipeline service role allows the pipeline to coordinate the source, build and deployment actions.
+Inspect whether the role has the permissions needed for:
 
-Depending on the configured stages, permissions can include:
+- Retrieving source information and source artifacts from CodeCommit.
+- Starting the configured CodeBuild project and reading its status.
+- Reading and writing pipeline artifacts in S3.
+- Using the configured encryption key, if applicable.
+- Invoking a deployment provider only if a Deploy stage is configured.
 
-- CodeCommit permissions to retrieve repository information and source revisions.
-- CodeBuild permissions to start builds and retrieve build status.
-- S3 permissions to read and write pipeline artifacts.
-- Relevant deployment-service permissions if a Deploy stage is implemented.
-- AWS KMS permissions if the artifact bucket uses a customer-managed encryption key.
+The CodePipeline service role normally trusts `codepipeline.amazonaws.com`.
 
-### Trust relationships
+### IAM evidence
 
-Service roles should trust the appropriate AWS service principal. For example, CodeBuild roles normally trust `codebuild.amazonaws.com`, while CodePipeline roles normally trust `codepipeline.amazonaws.com`.
+Capture the Permissions tab for the CodeBuild and CodePipeline roles and their Trust relationships tabs. Record attached managed policies and relevant inline policy actions in `AWS_ENVIRONMENT_SETUP.md`. Where practical, note which resources each policy applies to.
 
-### Documenting the actual policies
+Do not assume a managed policy is attached just because it is commonly used. Verify the policy name and contents in the IAM Console. Avoid publishing access keys, credentials, or sensitive account details.
 
-The final submission must identify the actual IAM role names and policies attached in the AWS account.
+## 13. Resource Tagging Strategy
 
-| Identity | Actual role or user name | Attached policies |
-|---|---|---|
-| Developer | Complete from AWS Console | Record actual policies |
-| CodeBuild | Complete from AWS Console | Record actual policies |
-| CodePipeline | Complete from AWS Console | Record actual policies |
-| Deployment service, if used | Complete from AWS Console | Record actual policies |
-
-Review the IAM Console and record the actual policies rather than assuming that example actions are already attached.
-
-Avoid using root credentials for routine work, committing access keys or granting unrestricted administrator access to service roles.
-
-## 13. AWS Resource Tagging Strategy
-
-Consistent tags make resources easier to identify, manage and audit.
-
-Where supported, apply tags such as:
+Apply a consistent tagging scheme where supported and record the actual tags used.
 
 | Tag key | Example value |
 |---|---|
@@ -449,156 +320,82 @@ Where supported, apply tags such as:
 | `Environment` | `Development` |
 | `ManagedBy` | `Student` |
 | `Purpose` | `CI-CD-Learning` |
-| `Owner` | `Project-Owner` |
 
-Apply appropriate tags to supported resources, including CodeBuild projects, CodePipeline resources, S3 buckets and IAM resources where tagging is supported.
+Check the resource's Tags section in AWS. These are suggested values, not confirmation that the resources have already been tagged.
 
-These are recommended tag values. Document the actual values used in your AWS account.
+## 14. Environment Variables and Secrets
 
-## 14. Amazon S3 Artifact Storage
+The basic Go greeting application does not require external API credentials. The build uses the runtime and target-platform settings defined in `buildspec.yml`.
 
-Amazon S3 is used as the pipeline artifact store.
+Do not store AWS access keys, passwords, or tokens in source files, README content, or committed build configuration. If future extensions require secrets, use an appropriate managed secret store and grant access only to the required role.
 
-The pipeline artifact bucket holds the files exchanged between pipeline stages. The build output should include the compiled Go executable and README file.
+Record any non-secret environment variables actually configured for CodeBuild in `AWS_ENVIRONMENT_SETUP.md`. If none are configured, state that explicitly.
 
-The exact artifact object name and location may be generated by CodePipeline.
+## 15. Troubleshooting
 
-### Verification
-
-1. Open the CodePipeline configuration.
-2. Identify the configured artifact store bucket.
-3. Open the corresponding S3 bucket.
-4. Locate the relevant pipeline execution artifacts.
-5. Confirm that the build completed successfully and produced an output artifact.
-
-Do not make the pipeline artifact bucket public. Keep the bucket permissions restricted to the relevant AWS services and authorised users.
-
-**Evidence:** Include a screenshot showing the S3 bucket and the relevant artifact object.
-
-## 15. Environment Variables and Build Configuration
-
-The application does not require custom secrets or external API credentials.
-
-The build process uses the runtime and target platform settings in `buildspec.yml`.
-
-The compilation command is:
-
-```bash
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-  go build -o dist/go-aws-ci-pipeline ./cmd/app
-```
-
-This produces a Linux AMD64 executable without requiring a C toolchain for this application.
-
-No passwords, access keys or other secrets should be placed in `buildspec.yml` or committed to the repository.
-
-If additional configuration becomes necessary, use appropriate AWS-managed secret storage and access controls.
-
-## 16. Testing and Validation
-
-Testing takes place locally and in AWS CodeBuild.
-
-### Local testing
-
-```bash
-go test ./...
-go run ./cmd/app
-```
-
-### AWS testing
-
-The AWS pipeline validates that:
-
-1. Source code is retrieved successfully.
-2. The Go runtime is available.
-3. Formatting and dependency checks pass.
-4. Unit tests complete successfully.
-5. The Go executable compiles successfully.
-6. The output artifact is generated.
-7. Pipeline execution results are available for review.
-
-### Automatic trigger testing
-
-To verify automatic change detection:
-
-1. Create a small code change on a feature branch.
-2. Run the local tests.
-3. Commit and push the feature branch.
-4. Merge the change into `main` using the documented workflow.
-5. Confirm that the new commit reaches CodeCommit.
-6. Open CodePipeline and inspect the new execution.
-7. Confirm that the configured stages complete successfully.
-
-This demonstrates how version control and pipeline automation support continuous integration.
-
-## 17. Evidence and Screenshots
-
-The following screenshots should be included in the `screenshots/` directory.
-
-| Evidence | Required content |
+| Problem | What to check |
 |---|---|
-| Local environment | Go, Git and AWS CLI version output |
-| Local tests | Successful `go test ./...` output |
-| Git history | Descriptive commits and branch workflow |
-| CodeCommit | Repository, branch and source files in AWS Console |
-| IAM | Actual service role names and attached policies |
-| CodeBuild configuration | Source, environment and build specification |
-| CodeBuild history | Successful build showing `SUCCEEDED` |
-| CodeBuild logs | Passing tests and successful compilation |
-| CodePipeline | Full configured pipeline execution |
-| Deployment stage | Successful deployment status, if required |
-| S3 artifact | Artifact bucket and output object |
-| Automatic trigger | New commit followed by a pipeline execution |
+| `go: command not found` locally | Install Go and verify `PATH`. |
+| Tests fail | Read the test output and correct code or expectations. |
+| `buildspec.yml` not found | Confirm it is committed at the configured path, normally the repository root. |
+| CodeCommit authentication fails | Verify the repository URL, Git authentication setup, and repository permissions. |
+| CodeBuild `AccessDenied` | Review the CodeBuild service role, S3 permissions, and KMS access if applicable. |
+| Pipeline cannot start CodeBuild | Check the pipeline role, project selection, and input artifact configuration. |
+| Pipeline does not trigger automatically | Confirm the pushed branch, source-change detection, and latest remote commit. |
+| S3 artifact is missing | Check the configured artifact store and the relevant pipeline execution. |
+| Build succeeds locally but fails in AWS | Compare Go versions, build image, paths, environment variables, and build logs. |
 
-Screenshots should be genuine, readable and consistent with the resource names documented in this README. Remove or obscure sensitive account details where appropriate.
+## 16. Assessment Evidence Checklist
 
-## 18. Troubleshooting
+Place genuine screenshots in `screenshots/` and use the actual filenames in the table below.
 
-| Issue | Recommended action |
-|---|---|
-| Go tests fail | Inspect the test output and correct the application or test expectations. |
-| Build specification not found | Confirm that `buildspec.yml` is committed at the repository root. |
-| CodeCommit authentication fails | Verify Git credentials and repository access permissions. |
-| CodeBuild reports `AccessDenied` | Review the CodeBuild service role and artifact permissions. |
-| CodePipeline fails to start a build | Check the pipeline role, selected CodeBuild project and source configuration. |
-| Automatic execution does not start | Verify the configured branch, source-change detection and latest remote commit. |
-| Artifact cannot be found | Confirm the pipeline artifact store bucket and inspect the correct execution's output. |
-| Deployment stage fails | Review the selected provider, deployment configuration, target permissions and deployment logs. |
+| Evidence | What it must show | Filename example |
+|---|---|---|
+| Local environment | Go, Git, and AWS CLI versions | `01-local-environment.png` |
+| Local unit tests | Successful `go test ./...` | `02-local-tests.png` |
+| Git history | Descriptive commits | `03-git-history.png` |
+| CodeCommit repository | Repository and committed files | `04-codecommit-repository.png` |
+| CodeCommit branches | `main` and feature branch if created | `05-codecommit-branches.png` |
+| CodeBuild project | Source, environment, buildspec | `06-codebuild-project.png` |
+| CodeBuild success | Build history with `SUCCEEDED` | `07-codebuild-succeeded.png` |
+| Build logs | Passing tests and compilation | `08-codebuild-logs.png` |
+| CodePipeline success | Source and Build both `Succeeded` | `09-codepipeline-succeeded.png` |
+| Automatic trigger | New commit and resulting execution | `10-automatic-trigger.png` |
+| S3 artifact | Bucket and relevant object | `11-s3-artifact.png` |
+| IAM roles | Actual role permissions and trust | `12-iam-codebuild-role.png`, `13-iam-codepipeline-role.png` |
 
-## 19. Project Outcomes
+If a screenshot has not yet been captured, mark that item as pending in your own progress notes rather than implying the evidence exists.
 
-This project demonstrates practical knowledge of:
+## 17. Final Validation
 
-- Go application development and unit testing.
-- Git version control and feature branch workflows.
-- AWS CodeCommit repository management.
-- AWS CodeBuild configuration and build automation.
-- AWS CodePipeline orchestration.
-- IAM roles, service trust relationships and least-privilege access.
-- Amazon S3 artifact management.
-- Automated change detection and pipeline validation.
-- Technical documentation and evidence-based assessment.
+Before submission:
 
-## 20. Conclusion
+- [ ] `go test ./...` passes locally.
+- [ ] CodeCommit contains the latest project files.
+- [ ] Feature branch and merge workflow is documented with real evidence.
+- [ ] CodeBuild has a successful execution.
+- [ ] CodePipeline Source and Build stages succeed.
+- [ ] A new push triggers a pipeline execution automatically, if configured.
+- [ ] The S3 artifact has been located and evidenced.
+- [ ] Actual IAM policies and trust relationships are documented.
+- [ ] Resource tags are recorded accurately.
+- [ ] Screenshots are readable, genuine, and referenced correctly.
+- [ ] No credentials or secrets are committed.
 
-The Go AWS DevOps CI/CD Pipeline demonstrates how source control, automated testing, compilation and artifact storage can be integrated using managed AWS services.
+## 18. Conclusion
 
-The implementation provides a foundation for extending the workflow with additional quality checks, pull request controls, security scanning and a suitable deployment target.
+This project demonstrates how a Go application can be validated and compiled through AWS-managed CI services. The combination of Git, CodeCommit, CodeBuild, CodePipeline, IAM, CloudWatch Logs, and S3 provides a repeatable workflow for source control, automated testing, build execution, and artifact storage.
 
-Successful completion should be demonstrated through the actual AWS Console configuration, passing build logs, pipeline execution history, IAM policy documentation, source branch workflow and artifact evidence.
+The quality of the submission should be demonstrated through actual AWS configuration and execution evidence, not documentation alone. The repository, successful build, successful pipeline stages, artifact object, IAM permissions, and branch workflow should all be verified before the project is submitted.
 
-## 21. Project Links
+## 19. Project Details
 
-**GitHub repository:** Add your own public repository URL here, if applicable.
+- **Project:** Go AWS DevOps CI/CD Pipeline
+- **CodeCommit repository:** `go-aws-ci-pipeline` (verify in AWS Console)
+- **CodeBuild project:** `go-aws-ci-build` (verify in AWS Console)
+- **CodePipeline pipeline:** `go-aws-ci-pipeline` (verify in AWS Console)
+- **AWS Region:** Record the actual region
+- **Evidence folder:** `screenshots/`
+- **Environment documentation:** `AWS_ENVIRONMENT_SETUP.md`
 
-**AWS CodeCommit repository:** Add the repository name and console reference used for your project.
-
-**AWS CodeBuild project:** `go-aws-ci-build`
-
-**AWS CodePipeline pipeline:** `go-aws-ci-pipeline`
-
-**Evidence directory:** `screenshots/`
-
-*Note: Replace example names and descriptions with the actual configuration from your AWS account. Only mark stages as successful after verifying the corresponding AWS Console execution.*
-
-
+> **Accuracy note:** Replace example names, paths, and screenshot filenames where your actual configuration differs. Only report a stage, artifact, IAM policy, branch, or automatic trigger as completed after verifying it in your environment.
